@@ -17,6 +17,7 @@ import { useGameStats } from '@/shared/hooks/game/useGameStats';
 import { useTilesModeHandlers } from '@/shared/hooks/game/useTilesModeHandlers';
 import { useTilesModeState } from '@/shared/hooks/game/useTilesModeState';
 import { getKanaTilesQuestionShape } from '@/features/Kana/lib/getKanaTilesQuestionShape';
+import { normalizeKanaForComparison } from '@/features/Kana/lib/normalizeKanaForComparison';
 
 import { GameBottomBar } from '@/shared/ui-composite/Game/GameBottomBar';
 import { cn } from '@/shared/utils/utils';
@@ -312,7 +313,7 @@ const KanaTilesMode = ({
     if (placedTileIds.length === wordData.answerChars.length) {
       const placedArray = placedTileIds.map(id => wordData.allTiles.get(id) ?? '');
       isCorrect = placedArray.every(
-        (tile, i) => tile === wordData.answerChars[i],
+        (tile, i) => normalizeKanaForComparison(tile) === normalizeKanaForComparison(wordData.answerChars[i]),
       );
     }
 
