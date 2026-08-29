@@ -937,7 +937,9 @@
     "mainColor": "oklch(65.0% 0.180 350.0 / 1)",
     "secondaryColor": "oklch(72.0% 0.145 130.0 / 1)",
     "issued": false,
-    "completed": false
+    "completed": false,
+    "completedBy": "NithishMR",
+    "completedPR": 29399
   },
   {
     "id": "shinto-portal",
