@@ -134,6 +134,7 @@ interface TileProps {
   lang?: string;
   variants?: Variants;
   motionStyle?: MotionStyle;
+  matchedPrefixLength?: number;
 }
 
 export const ActiveTile = ({
@@ -146,7 +147,12 @@ export const ActiveTile = ({
   lang,
   variants,
   motionStyle,
+  matchedPrefixLength = 0,
 }: TileProps) => {
+  const characters = Array.from(char);
+  const matchedText = characters.slice(0, matchedPrefixLength).join('');
+  const remainingText = characters.slice(matchedPrefixLength).join('');
+
   return (
     <motion.button
       layoutId={layoutId ?? `${id}-${char}`}
@@ -167,7 +173,14 @@ export const ActiveTile = ({
       lang={lang}
       style={motionStyle}
     >
-      {char}
+      {matchedPrefixLength > 0 ? (
+        <span>
+          <span className='text-blue-500'>{matchedText}</span>
+          {remainingText}
+        </span>
+      ) : (
+        char
+      )}
     </motion.button>
   );
 };
@@ -218,6 +231,7 @@ export const useTilesModeActionKey = (
 ) => {
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.defaultPrevented) return;
       if (
         event.key === 'Enter' ||
         event.code === 'Space' ||

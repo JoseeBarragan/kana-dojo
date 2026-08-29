@@ -78,3 +78,36 @@ describe('TilesModeGrid explode celebration', () => {
     expect(tile.style.opacity).toBe('1');
   });
 });
+
+describe('TilesModeGrid keyboard prefix', () => {
+  it('highlights only the matching visible prefix', () => {
+    render(
+      <TilesModeGrid
+        allTiles={
+          new Map([
+            [1, 'lake'],
+            [2, 'lair'],
+            [3, 'done'],
+          ])
+        }
+        placedTileIds={[]}
+        onTileClick={vi.fn()}
+        isTileDisabled={false}
+        isCelebrating={false}
+        celebrationMode='bounce'
+        tilesPerRow={2}
+        tileSizeClassName='text-2xl'
+        answerRowClassName='answer-row'
+        typedPrefix='la'
+      />,
+    );
+
+    const lake = screen.getByRole('button', { name: 'lake' });
+    const lair = screen.getByRole('button', { name: 'lair' });
+    const done = screen.getByRole('button', { name: 'done' });
+
+    expect(lake.querySelector('.text-blue-500')?.textContent).toBe('la');
+    expect(lair.querySelector('.text-blue-500')?.textContent).toBe('la');
+    expect(done.querySelector('.text-blue-500')).toBeNull();
+  });
+});
