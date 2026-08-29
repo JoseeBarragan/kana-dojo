@@ -293,7 +293,7 @@ const VocabTilesMode = ({
       playClick,
     });
 
-  const { typedPrefix, clearTypedPrefix } = useTilesModeKeyboardSelection({
+  const { clearTypedPrefix } = useTilesModeKeyboardSelection({
     allTiles: questionData.allTiles,
     placedTileIds,
     onTileClick: handleTileClick,
@@ -724,7 +724,6 @@ const VocabTilesMode = ({
                   : undefined
               }
               tilesWrapperKey={questionData.word}
-              typedPrefix={typedPrefix}
             />
           </motion.div>
         )}

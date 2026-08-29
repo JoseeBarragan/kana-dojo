@@ -206,7 +206,7 @@ const KanjiTilesMode = ({
     playClick,
   });
 
-  const { typedPrefix, clearTypedPrefix } = useTilesModeKeyboardSelection({
+  const { clearTypedPrefix } = useTilesModeKeyboardSelection({
     allTiles: questionData.allTiles,
     placedTileIds,
     onTileClick: handleTileClick,
@@ -512,7 +512,6 @@ const KanjiTilesMode = ({
                   : undefined
               }
               tilesWrapperKey={questionData.kanjiChar}
-              typedPrefix={typedPrefix}
             />
           </motion.div>
         )}

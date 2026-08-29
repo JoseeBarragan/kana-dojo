@@ -258,7 +258,7 @@ const KanaTilesMode = ({
     playClick,
   });
 
-  const { typedPrefix, clearTypedPrefix } = useTilesModeKeyboardSelection({
+  const { clearTypedPrefix } = useTilesModeKeyboardSelection({
     allTiles: wordData.allTiles,
     placedTileIds,
     onTileClick: handleTileClick,
@@ -553,7 +553,6 @@ const KanaTilesMode = ({
             tilesContainerClassName={
               isGlassMode ? 'rounded-xl bg-(--card-color) px-4 py-2' : undefined
             }
-            typedPrefix={typedPrefix}
           />
         </motion.div>
       </AnimatePresence>

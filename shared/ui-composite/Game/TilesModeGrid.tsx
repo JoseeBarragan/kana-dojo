@@ -149,7 +149,6 @@ interface TilesModeGridProps {
   answerRowClassName: string;
   tilesContainerClassName?: string;
   tilesWrapperKey?: string;
-  typedPrefix?: string;
 }
 
 const TilesModeGrid = ({
@@ -165,7 +164,6 @@ const TilesModeGrid = ({
   answerRowClassName,
   tilesContainerClassName,
   tilesWrapperKey,
-  typedPrefix = '',
 }: TilesModeGridProps) => {
   const styleTag = useMemo(() => explosionKeyframes, []);
   const celebrationContainerVariantsToUse =
@@ -186,13 +184,6 @@ const TilesModeGrid = ({
 
   const renderTile = ([id, char]: readonly [number, string]) => {
     const isPlaced = placedTileIdsSet.has(id);
-    const normalizedPrefix = typedPrefix.normalize('NFC').toLocaleLowerCase();
-    const isPrefixMatch = char
-      .normalize('NFC')
-      .toLocaleLowerCase()
-      .startsWith(normalizedPrefix);
-    const matchedPrefixLength =
-      normalizedPrefix && isPrefixMatch ? Array.from(typedPrefix).length : 0;
 
     return (
       <motion.div
@@ -214,7 +205,6 @@ const TilesModeGrid = ({
               isDisabled={isTileDisabled}
               sizeClassName={tileSizeClassName}
               lang={tileLang}
-              matchedPrefixLength={matchedPrefixLength}
             />
           </div>
         )}
