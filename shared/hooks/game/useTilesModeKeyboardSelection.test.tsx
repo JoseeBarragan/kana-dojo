@@ -111,6 +111,116 @@ describe('useTilesModeKeyboardSelection', () => {
     expect(onTileClick).toHaveBeenCalledWith(3, 'done');
   });
 
+  it('clears an active prefix with Escape but leaves the next Escape unhandled', async () => {
+    const onExit = vi.fn();
+    const exitHandler = (event: KeyboardEvent) => {
+      if (!event.defaultPrevented && event.key === 'Escape') onExit();
+    };
+    window.addEventListener('keydown', exitHandler);
+
+    const { result } = renderKeyboardSelection(
+      new Map([
+        [1, 'lake'],
+        [2, 'lair'],
+      ]),
+    );
+
+    await waitFor(() =>
+      expect(result.current.isKeyboardSelectionEnabled).toBe(true),
+    );
+
+    fireEvent.keyDown(window, { key: 'l' });
+    expect(result.current.typedPrefix).toBe('l');
+
+    const clearingEscape = new KeyboardEvent('keydown', {
+      key: 'Escape',
+      bubbles: true,
+      cancelable: true,
+    });
+    act(() => window.dispatchEvent(clearingEscape));
+    expect(clearingEscape.defaultPrevented).toBe(true);
+    expect(result.current.typedPrefix).toBe('');
+    expect(onExit).not.toHaveBeenCalled();
+
+    const exitingEscape = new KeyboardEvent('keydown', {
+      key: 'Escape',
+      bubbles: true,
+      cancelable: true,
+    });
+    act(() => window.dispatchEvent(exitingEscape));
+    expect(exitingEscape.defaultPrevented).toBe(false);
+    expect(onExit).toHaveBeenCalledOnce();
+
+    window.removeEventListener('keydown', exitHandler);
+  });
+
+  it('clears an ambiguous prefix when a commit key has no exact match', async () => {
+    const { result } = renderKeyboardSelection(
+      new Map([
+        [1, 'lake'],
+        [2, 'lair'],
+      ]),
+    );
+
+    await waitFor(() =>
+      expect(result.current.isKeyboardSelectionEnabled).toBe(true),
+    );
+
+    fireEvent.keyDown(window, { key: 'l' });
+    fireEvent.keyDown(window, { key: 'a' });
+    fireEvent.keyDown(window, { key: ' ' });
+
+    expect(result.current.typedPrefix).toBe('');
+  });
+
+  it('clears a pending prefix on mismatch without replaying the mismatched key', async () => {
+    const onTileClick = vi.fn();
+    const { result } = renderKeyboardSelection(
+      new Map([
+        [1, 'lake'],
+        [2, 'lair'],
+        [3, 'dog'],
+      ]),
+      onTileClick,
+    );
+
+    await waitFor(() =>
+      expect(result.current.isKeyboardSelectionEnabled).toBe(true),
+    );
+
+    fireEvent.keyDown(window, { key: 'l' });
+    fireEvent.keyDown(window, { key: 'a' });
+    expect(result.current.typedPrefix).toBe('la');
+
+    fireEvent.keyDown(window, { key: 'd' });
+    expect(result.current.typedPrefix).toBe('');
+    expect(onTileClick).not.toHaveBeenCalled();
+
+    fireEvent.keyDown(window, { key: 'd' });
+    expect(onTileClick).toHaveBeenCalledOnce();
+    expect(onTileClick).toHaveBeenCalledWith(3, 'dog');
+  });
+
+  it('excludes a selected tile immediately and ignores repeated keydown events', async () => {
+    const onTileClick = vi.fn();
+    const { result } = renderKeyboardSelection(
+      new Map([[1, 'cat']]),
+      onTileClick,
+    );
+
+    await waitFor(() =>
+      expect(result.current.isKeyboardSelectionEnabled).toBe(true),
+    );
+
+    fireEvent.keyDown(window, { key: 'c', repeat: true });
+    expect(onTileClick).not.toHaveBeenCalled();
+
+    fireEvent.keyDown(window, { key: 'c' });
+    fireEvent.keyDown(window, { key: 'c' });
+    expect(onTileClick).toHaveBeenCalledTimes(1);
+    expect(onTileClick).toHaveBeenCalledWith(1, 'cat');
+  });
+
   it('does nothing on coarse-pointer devices', async () => {
     setFinePointer(false);
     const onTileClick = vi.fn();
@@ -137,6 +247,22 @@ describe('getTilePrefixMatches', () => {
 
     expect(getTilePrefixMatches(candidates, 'cafe\u0301')).toEqual([
       candidates[0],
+    ]);
+  });
+
+  it('normalizes common apostrophes, dashes, and whitespace', () => {
+    const candidates = [
+      { id: 1, text: 'rock’n’roll' },
+      { id: 2, text: 'well—known' },
+      { id: 3, text: 'ice\u00a0cream' },
+    ];
+
+    expect(getTilePrefixMatches(candidates, "rock'n")).toEqual([candidates[0]]);
+    expect(getTilePrefixMatches(candidates, 'well-known')).toEqual([
+      candidates[1],
+    ]);
+    expect(getTilePrefixMatches(candidates, 'ice cream')).toEqual([
+      candidates[2],
     ]);
   });
 });

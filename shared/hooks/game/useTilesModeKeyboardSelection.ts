@@ -4,7 +4,12 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useHasFinePointer } from '@/shared/hooks/generic/useHasFinePointer';
 
 const normalizeTileText = (value: string) =>
-  value.normalize('NFC').toLocaleLowerCase();
+  value
+    .normalize('NFC')
+    .toLocaleLowerCase()
+    .replace(/[\u2018\u2019\u02bc\uff07]/g, "'")
+    .replace(/[\u2010-\u2015\u2212\ufe58\ufe63\uff0d]/g, '-')
+    .replace(/[\s\u00a0]+/g, ' ');
 
 const isEditableTarget = (target: EventTarget | null) => {
   if (!(target instanceof HTMLElement)) return false;
@@ -94,6 +99,12 @@ export const useTilesModeKeyboardSelection = ({
     if (!isEnabled) return;
 
     const selectTile = (candidate: TileKeyboardCandidate) => {
+      candidatesRef.current = candidatesRef.current.filter(
+        currentCandidate => currentCandidate.id !== candidate.id,
+      );
+      if (!placedTileIdsRef.current.includes(candidate.id)) {
+        placedTileIdsRef.current = [...placedTileIdsRef.current, candidate.id];
+      }
       setTypedPrefix('');
       onTileClickRef.current(candidate.id, candidate.text);
     };
@@ -107,6 +118,19 @@ export const useTilesModeKeyboardSelection = ({
         event.metaKey ||
         event.altKey
       ) {
+        return;
+      }
+
+      if (event.repeat) {
+        event.preventDefault();
+        return;
+      }
+
+      if (event.key === 'Escape') {
+        if (typedPrefixRef.current) {
+          event.preventDefault();
+          setTypedPrefix('');
+        }
         return;
       }
 
@@ -137,7 +161,11 @@ export const useTilesModeKeyboardSelection = ({
         const exactMatch = candidatesRef.current.find(
           candidate => normalizeTileText(candidate.text) === normalizedPrefix,
         );
-        if (exactMatch) selectTile(exactMatch);
+        if (exactMatch) {
+          selectTile(exactMatch);
+        } else {
+          setTypedPrefix('');
+        }
         return;
       }
 
@@ -151,6 +179,8 @@ export const useTilesModeKeyboardSelection = ({
         selectTile(matches[0]);
       } else if (matches.length > 1) {
         setTypedPrefix(nextPrefix);
+      } else if (typedPrefixRef.current) {
+        setTypedPrefix('');
       }
     };
 
@@ -167,14 +197,19 @@ export const useTilesModeKeyboardSelection = ({
         } else if (matches.length > 1) {
           compositionPrefix = nextPrefix;
           setTypedPrefix(compositionPrefix);
+        } else if (compositionPrefix) {
+          compositionPrefix = '';
+          setTypedPrefix('');
         }
       }
     };
 
-    window.addEventListener('keydown', handleKeyDown);
+    // Capture runs before the session-level Escape and action shortcuts, so a
+    // pending prefix gets first refusal without depending on mount order.
+    window.addEventListener('keydown', handleKeyDown, true);
     window.addEventListener('compositionend', handleCompositionEnd);
     return () => {
-      window.removeEventListener('keydown', handleKeyDown);
+      window.removeEventListener('keydown', handleKeyDown, true);
       window.removeEventListener('compositionend', handleCompositionEnd);
     };
   }, [isEnabled, setTypedPrefix]);
