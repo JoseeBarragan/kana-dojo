@@ -260,6 +260,8 @@ const ModeSetupMenu = ({
       : currentDojo === 'kanji'
         ? 'Kanji'
         : 'Vocabulary';
+  const dojoCharacter =
+    currentDojo === 'kana' ? 'あ' : currentDojo === 'kanji' ? '字' : '語';
   const ModeIcon = mode === 'blitz' ? Zap : mode === 'gauntlet' ? Swords : Play;
 
   if (!isOpen) return null;
@@ -283,7 +285,11 @@ const ModeSetupMenu = ({
           {/* Header */}
           <div className='space-y-3 text-center'>
             <span className='motion-safe:animate-float mx-auto flex h-20 w-20 items-center justify-center rounded-4xl border-b-14 border-(--secondary-color-accent) bg-(--secondary-color) text-(--background-color) [--float-distance:-5px]'>
-              <ModeIcon size={40} className='fill-current' />
+              {mode === 'train' ? (
+                <span className='text-5xl leading-none'>{dojoCharacter}</span>
+              ) : (
+                <ModeIcon size={40} className='fill-current' />
+              )}
             </span>
             <h1 className='text-2xl font-bold text-(--main-color)'>
               {dojoLabel}{' '}
