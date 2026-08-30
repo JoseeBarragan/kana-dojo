@@ -41,8 +41,9 @@ two workflows:
   Discord when a webhook secret is configured.
 
 After pushing, verify that both workflows succeeded and that the GitHub Release
-uses the expected tag, title, and notes. Rerunning either workflow is safe once
-the tag exists: the release script detects the existing tag and exits.
+uses the expected tag, title, and notes. The release script exits when the tag
+already exists, so if tag creation succeeds but GitHub Release creation fails,
+fix or remove the orphaned tag before rerunning the workflow.
 
 ## Community content
 
