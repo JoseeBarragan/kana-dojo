@@ -271,14 +271,15 @@ const ModeSetupMenu = ({
         <Suspense fallback={<></>}>
           <Decorations
             expandDecorations={false}
+            dimmedOpacityClass='opacity-20'
             interactive={true}
             context='mode-setup'
           />
         </Suspense>
       </div>
-      <div className='h-full w-full overflow-x-hidden overflow-y-auto overscroll-y-contain'>
+      <div className='pointer-events-none h-full w-full overflow-x-hidden overflow-y-auto overscroll-y-contain'>
         <div className='mx-auto flex min-h-[100dvh] w-full max-w-lg flex-col justify-center p-4'>
-          <div className='w-full space-y-4'>
+          <div className='pointer-events-auto w-full space-y-4'>
           {/* Header */}
           <div className='space-y-3 text-center'>
             <span className='motion-safe:animate-float mx-auto flex h-20 w-20 items-center justify-center rounded-4xl border-b-14 border-(--secondary-color-accent) bg-(--secondary-color) text-(--background-color) [--float-distance:-5px]'>
